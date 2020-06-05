@@ -1,197 +1,119 @@
-{
-    "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "AWS CloudFormation template to delete all data from Datalake buckets (qs-1nrlpbhn5)",
-    "Parameters": {
-        "DelBucket1": {
-            "Description": "Bucketname 1",
-            "Type": "String"
-        },
-        "DelBucket2": {
-            "Description": "Bucketname 2",
-            "Type": "String"
-        },
-        "DelBucket3": {
-            "Description": "Bucketname 3",
-            "Type": "String"
-        },
-        "DelBucket4": {
-            "Description": "Bucketname 4",
-            "Type": "String"
-        }
-    },
-    "Conditions": {},
-    "Resources": {
-        "EmptyBucketsRole": {
-            "Properties": {
-                "AssumeRolePolicyDocument": {
-                    "Statement": [
-                        {
-                            "Action": [
-                                "sts:AssumeRole"
-                            ],
-                            "Effect": "Allow",
-                            "Principal": {
-                                "Service": [
-                                    "lambda.amazonaws.com"
-                                ]
-                            }
-                        }
-                    ],
-                    "Version": "2012-10-17"
-                },
-                "Policies": [
-                    {
-                        "PolicyDocument": {
-                            "Statement": [
-                                {
-                                    "Action": [
-                                        "logs:CreateLogGroup",
-                                        "logs:CreateLogStream",
-                                        "logs:PutLogEvents"
-                                    ],
-                                    "Effect": "Allow",
-                                    "Resource": "arn:aws:logs:*:*:*"
-                                }
-                            ],
-                            "Version": "2012-10-17"
-                        },
-                        "PolicyName": "OodleLambdaLogging"
-                    },
-                    {
-                        "PolicyDocument": {
-                            "Statement": [
-                                {
-                                    "Action": [
-                                        "s3:ListAllMyBuckets"
-                                    ],
-                                    "Effect": "Allow",
-                                    "Resource": ["arn:aws:s3:::*"]
-                                },
-                                {
-                                    "Action": [
-                                        "s3:ListBucket"
-                                    ],
-                                    "Effect": "Allow",
-                                    "Resource": [
-                                        {
-                                            "Fn::Sub": "arn:aws:s3:::${DelBucket1}"
-                                        },
-                                        {
-                                            "Fn::Sub": "arn:aws:s3:::${DelBucket2}"
-                                        },
-                                        {
-                                            "Fn::Sub": "arn:aws:s3:::${DelBucket3}"
-                                        },
-                                        {
-                                            "Fn::Sub": "arn:aws:s3:::${DelBucket4}"
-                                        }
-                                    ]
-                                },
-                                {
-                                    "Action": [
-                                        "s3:DeleteObject"
-                                    ],
-                                    "Effect": "Allow",
-                                    "Resource": [
-                                        {
-                                            "Fn::Sub": "arn:aws:s3:::${DelBucket1}/*"
-                                        },
-                                        {
-                                            "Fn::Sub": "arn:aws:s3:::${DelBucket2}/*"
-                                        },
-                                        {
-                                            "Fn::Sub": "arn:aws:s3:::${DelBucket3}/*"
-                                        },
-                                        {
-                                            "Fn::Sub": "arn:aws:s3:::${DelBucket4}/*"
-                                        }
-                                    ]
-                                }
-                            ],
-                            "Version": "2012-10-17"
-                        },
-                        "PolicyName": "ListDeleteDataLakeBuckets"
-                    }
-                ]
-            },
-            "Type": "AWS::IAM::Role"
-        },
-        "EmptyBucketsFunction": {
-			"DependsOn": "EmptyBucketsRole",
-            "Properties": {
-                "Code": {
-                    "ZipFile": {
-                        "Fn::Join": [
-                            "\n",
-                            [
-                                "import json",
-                                "import cfnresponse",
-                                "import boto3",
-                                "import re",
-								"import time",
-                                "from botocore.exceptions import ClientError",
-                                "",
-                                "s3 = boto3.resource('s3')",
-                                "",
-                                "def handler(event, context):",
-                                "    if event['RequestType'] == 'Delete':",
-                                "        try:",
-                                "            for bname in event['ResourceProperties']:",
-                                "               if re.match('^TB[1-9]',bname):",
-								"                   b2d = event['ResourceProperties'][bname]",
-								"                   if len(b2d) == 0:",
-								"                       print('No value specified for: ' + bname)",
-								"                   elif s3.Bucket(b2d) in s3.buckets.all():",
-                                "                       print('Deleting all objects from S3 bucket: ' + b2d)",
-                                "                       print(s3.Bucket(b2d).objects.all().delete())",
-                                "                       time.sleep(30)",
-								"                   else:",
-								"                       print('S3 bucket does not exist: ' + b2d)",
-                                "            return cfnresponse.send(event, context, cfnresponse.SUCCESS, {})",
-                                "        except ClientError as e:",
-                                "            print(e)",
-                                "            return cfnresponse.send(event, context, cfnresponse.FAILED, {})",
-                                "    else:",
-                                "        return cfnresponse.send(event, context, cfnresponse.SUCCESS, {})"
-                            ]
-                        ]
-                    }
-                },
-                "Handler": "index.handler",
-                "Role": {
-                    "Fn::GetAtt": [
-                        "EmptyBucketsRole",
-                        "Arn"
-                    ]
-                },
-                "Runtime": "python3.6",
-                "Timeout": 300
-            },
-            "Type": "AWS::Lambda::Function"
-        },
-        "EmptyBuckets": {
-			"DependsOn": "EmptyBucketsFunction",
-            "Properties": {
-                "TB1": {
-                    "Ref": "DelBucket1"
-                },
-                "TB2": {
-                    "Ref": "DelBucket2"
-                },
-                "TB3": {
-                    "Ref": "DelBucket3"
-                },
-                "TB4": {
-                    "Ref": "DelBucket4"
-                },
-                "ServiceToken": {
-                    "Fn::GetAtt": [
-                        "EmptyBucketsFunction",
-                        "Arn"
-                    ]
-                }
-            },
-            "Type": "AWS::CloudFormation::CustomResource"
-        }
-    }
-}
+AWSTemplateFormatVersion: '2010-09-09'
+Description: AWS CloudFormation template to delete all data from Datalake buckets
+  (qs-1nrlpbhn5)
+Parameters:
+  DelBucket1:
+    Description: Bucketname 1
+    Type: String
+  DelBucket2:
+    Description: Bucketname 2
+    Type: String
+  DelBucket3:
+    Description: Bucketname 3
+    Type: String
+  DelBucket4:
+    Description: Bucketname 4
+    Type: String
+Conditions: {}
+Resources:
+  EmptyBucketsRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+        Version: '2012-10-17'
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Effect: Allow
+                Resource: arn:aws:logs:*:*:*
+            Version: '2012-10-17'
+          PolicyName: OodleLambdaLogging
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - s3:ListAllMyBuckets
+                Effect: Allow
+                Resource:
+                  - arn:aws:s3:::*
+              - Action:
+                  - s3:ListBucket
+                Effect: Allow
+                Resource:
+                  - !Sub 'arn:aws:s3:::${DelBucket1}'
+                  - !Sub 'arn:aws:s3:::${DelBucket2}'
+                  - !Sub 'arn:aws:s3:::${DelBucket3}'
+                  - !Sub 'arn:aws:s3:::${DelBucket4}'
+              - Action:
+                  - s3:DeleteObject
+                Effect: Allow
+                Resource:
+                  - !Sub 'arn:aws:s3:::${DelBucket1}/*'
+                  - !Sub 'arn:aws:s3:::${DelBucket2}/*'
+                  - !Sub 'arn:aws:s3:::${DelBucket3}/*'
+                  - !Sub 'arn:aws:s3:::${DelBucket4}/*'
+            Version: '2012-10-17'
+          PolicyName: ListDeleteDataLakeBuckets
+    Type: AWS::IAM::Role
+  EmptyBucketsFunction:
+    DependsOn: EmptyBucketsRole
+    Properties:
+      Code:
+        ZipFile: !Join
+          - "\n"
+          - - import json
+            - import cfnresponse
+            - import boto3
+            - import re
+            - import time
+            - from botocore.exceptions import ClientError
+            - ''
+            - s3 = boto3.resource('s3')
+            - ''
+            - 'def handler(event, context):'
+            - '    if event[''RequestType''] == ''Delete'':'
+            - '        try:'
+            - '            for bname in event[''ResourceProperties'']:'
+            - '               if re.match(''^TB[1-9]'',bname):'
+            - '                   b2d = event[''ResourceProperties''][bname]'
+            - '                   if len(b2d) == 0:'
+            - '                       print(''No value specified for: '' + bname)'
+            - '                   elif s3.Bucket(b2d) in s3.buckets.all():'
+            - '                       print(''Deleting all objects from S3 bucket:
+              '' + b2d)'
+            - '                       print(s3.Bucket(b2d).objects.all().delete())'
+            - '                       time.sleep(30)'
+            - '                   else:'
+            - '                       print(''S3 bucket does not exist: '' + b2d)'
+            - '            return cfnresponse.send(event, context, cfnresponse.SUCCESS,
+              {})'
+            - '        except ClientError as e:'
+            - '            print(e)'
+            - '            return cfnresponse.send(event, context, cfnresponse.FAILED,
+              {})'
+            - '    else:'
+            - '        return cfnresponse.send(event, context, cfnresponse.SUCCESS,
+              {})'
+      Handler: index.handler
+      Role: !GetAtt 'EmptyBucketsRole.Arn'
+      Runtime: python3.6
+      Timeout: 300
+    Type: AWS::Lambda::Function
+  EmptyBuckets:
+    DependsOn: EmptyBucketsFunction
+    Properties:
+      TB1: !Ref 'DelBucket1'
+      TB2: !Ref 'DelBucket2'
+      TB3: !Ref 'DelBucket3'
+      TB4: !Ref 'DelBucket4'
+      ServiceToken: !GetAtt 'EmptyBucketsFunction.Arn'
+    Type: AWS::CloudFormation::CustomResource

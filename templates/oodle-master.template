@@ -85,7 +85,6 @@ Metadata:
           - NexusInstanceType
           - StudioInstanceType
           - GitInstanceType
-          - BastionInstanceType
           - NumBastionHosts
           - RedshiftNodeType
           - RedshiftNumberOfNodes
@@ -96,10 +95,13 @@ Metadata:
           default: Quick Start Configuration
         Parameters:
           - QSS3BucketName
+          - QSS3BucketRegion
           - QSS3KeyPrefix
     ParameterLabels:
       QSS3BucketName:
         default: Quick Start S3 Bucket
+      QSS3BucketRegion:
+        default: Quick Start S3 bucket region
       QSS3KeyPrefix:
         default: Quick Start S3 Key Prefix (optional)
       TalendResourceBucket:
@@ -202,8 +204,6 @@ Metadata:
         default: AMC Database Password
       StudioInstanceType:
         default: Studio Instance Type
-      BastionInstanceType:
-        default: Bastion Instance Type
       NumBastionHosts:
         default: Number of Bastion Hosts
       RedshiftNodeType:
@@ -229,6 +229,10 @@ Parameters:
       S3 bucket name for the Quick Start assets. Quick Start bucket name can include
       numbers, lowercase letters, uppercase letters, periods (.), and hyphens (-).
       It cannot start or end with a hyphen (-) or period (.).
+    Type: String
+  QSS3BucketRegion:
+    Default: 'us-east-1'
+    Description: 'The AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. When using your own bucket, you must specify this value.'
     Type: String
   QSS3KeyPrefix:
     AllowedPattern: ^[0-9a-zA-Z-/]*$
@@ -401,23 +405,6 @@ Parameters:
       - c4.2xlarge
       - c4.4xlarge
     ConstraintDescription: must be a valid EC2 instance type.
-  BastionInstanceType:
-    Description: EC2 Instance type for Bastion host
-    Type: String
-    Default: t2.micro
-    AllowedValues:
-      - t2.nano
-      - t2.micro
-      - t2.small
-      - t2.medium
-      - t2.large
-      - m3.large
-      - m3.xlarge
-      - m3.2xlarge
-      - m4.large
-      - m4.xlarge
-      - m4.2xlarge
-      - m4.4xlarge
   CreateEmr:
     Description: Set this to true to create a new EMR instance. If you do not wish
       to use EMR or want to use an existing EMR, set this to false.
@@ -783,11 +770,18 @@ Conditions:
     - !Equals
       - !Ref 'NumBastionHosts'
       - '0'
+  UsingDefaultBucket: !Equals 
+    - !Ref 'QSS3BucketName'
+    - 'aws-quickstart'
 Resources:
   VpcStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub 'http://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}modules/bastion/submodules/quickstart-aws-vpc/templates/aws-vpc.template'
+      TemplateURL:
+        !Sub
+          - 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}modules/quickstart-aws-vpc/templates/aws-vpc.template'
+          - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+            S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
       Parameters:
         AvailabilityZones: !Join
           - ','
@@ -802,7 +796,11 @@ Resources:
   OodleStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub 'http://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/oodle.template'
+      TemplateURL:
+        !Sub
+          - 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/oodle.template'
+          - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+            S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
       Parameters:
         QSS3BucketName: !Ref 'QSS3BucketName'
         QSS3KeyPrefix: !Ref 'QSS3KeyPrefix'
@@ -821,7 +819,6 @@ Resources:
         LogserverInstanceType: !Ref 'LogserverInstanceType'
         JobserverInstanceType: !Ref 'JobserverInstanceType'
         StudioInstanceType: !Ref 'StudioInstanceType'
-        BastionInstanceType: !Ref 'BastionInstanceType'
         CreateEmr: !Ref 'CreateEmr'
         CreateDistantRunStack: !Ref 'CreateDistantRunStack'
         CreateTacDatabase: !Ref 'CreateTacDatabase'
