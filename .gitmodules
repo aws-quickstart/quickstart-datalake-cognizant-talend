@@ -9,5 +9,5 @@
 	url = https://github.com/Talend/quickstart-linux-bastion.git
 [submodule "modules/quickstart-aws-vpc"]
 	path = modules/quickstart-aws-vpc
-	url = https://github.com/Talend/quickstart-aws-vpc.git
+	url = https://github.com/aws-quickstart/quickstart-aws-vpc.git
 	branch = develop
