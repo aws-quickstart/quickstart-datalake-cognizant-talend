@@ -1,557 +1,388 @@
-{
-    "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "Create Oodle Security Groups (qs-1nrlpbhnk)",
-    "Parameters": {
-		"BastionSecurityGroupID": {
-            "Description": "Bastion Server Security Group.",
-            "Type": "String"
-		},
-        "DatabaseSecurityGroupID": {
-            "Description": "Database Security Group.",
-            "Type": "String"
-        },
-        "RedshiftSecurityGroupID": {
-            "Description": "Redshift Security Group.",
-            "Type": "String"
-        },
-        "RedshiftPort": {
-            "Description": "RedShift Port",
-            "Type": "String"
-        },
-        "EmrSecurityGroupID": {
-            "Description": "Database Security Group.",
-            "Type": "String"
-        },
-        "StudioSecurityGroupID": {
-            "Description": "Talend Studio Security Group.",
-            "Type": "String"
-        },
-        "TacSecurityGroupID": {
-            "Description": "TAC Security Group.",
-            "Type": "String"
-        },
-        "JobserverSecurityGroupID": {
-            "Description": "Jobserver Security Group.",
-            "Type": "String"
-        },
-        "DistantRunSecurityGroupID": {
-            "Description": "DistantRun Security Group.",
-            "Type": "String"
-        },
-        "NexusSecurityGroupID": {
-            "Description": "Nexus Security Group.",
-            "Type": "String"
-        },
-        "LogserverSecurityGroupID": {
-            "Description": "Logserver Security Group.",
-            "Type": "String"
-        },
-        "CommandlineSecurityGroupID": {
-            "Description": "Commandline Security Group.",
-            "Type": "String"
-        },
-        "GitSecurityGroupID": {
-            "Description": "Git Security Group.",
-            "Type": "String"
-        }
-    },
-    "Mappings": {
-    },
-    "Conditions": {
-        "BastionCondition": {
-            "Fn::Not": [
-                { "Fn::Equals": [ "", { "Ref": "BastionSecurityGroupID" } ] }
-            ]
-        },
-        "RedshiftCondition": {
-            "Fn::Not": [
-                { "Fn::Equals": [ "", { "Ref": "RedshiftSecurityGroupID" } ] }
-            ]
-        },
-        "EmrCondition": {
-            "Fn::Not": [
-                { "Fn::Equals": [ "", { "Ref": "EmrSecurityGroupID" } ] }
-            ]
-        },
-        "DatabaseCondition": {
-            "Fn::Not": [
-                { "Fn::Equals": [ "", { "Ref": "DatabaseSecurityGroupID" } ] }
-            ]
-        },
-        "StudioCondition": {
-            "Fn::Not": [
-                { "Fn::Equals": [ "", { "Ref": "StudioSecurityGroupID" } ] }
-            ]
-        },
-        "TacCondition": {
-            "Fn::Not": [
-                { "Fn::Equals": [ "", { "Ref": "TacSecurityGroupID" } ] }
-            ]
-        },
-        "JobserverCondition": {
-            "Fn::Not": [
-                { "Fn::Equals": [ "", { "Ref": "JobserverSecurityGroupID" } ] }
-            ]
-        },
-        "DistantRunCondition": {
-            "Fn::Not": [
-                { "Fn::Equals": [ "", { "Ref": "DistantRunSecurityGroupID" } ] }
-            ]
-        },
-        "NexusCondition": {
-            "Fn::Not": [
-                { "Fn::Equals": [ "", { "Ref": "NexusSecurityGroupID" } ] }
-            ]
-        },
-        "LogserverCondition": {
-            "Fn::Not": [
-                { "Fn::Equals": [ "", { "Ref": "LogserverSecurityGroupID" } ] }
-            ]
-        },
-        "CommandlineCondition": {
-            "Fn::Not": [
-                { "Fn::Equals": [ "", { "Ref": "CommandlineSecurityGroupID" } ] }
-            ]
-        },
-        "GitCondition": {
-            "Fn::Not": [
-                { "Fn::Equals": [ "", { "Ref": "GitSecurityGroupID" } ] }
-            ]
-        },
-        "BastionDatabaseCondition": {
-            "Fn::And": [
-                { "Condition": "BastionCondition" },
-                { "Condition": "DatabaseCondition" }
-            ]
-        },
-        "BastionStudioCondition": {
-            "Fn::And": [
-                { "Condition": "BastionCondition" },
-                { "Condition": "StudioCondition" }
-            ]
-        },
-        "BastionTacCondition": {
-            "Fn::And": [
-                { "Condition": "BastionCondition" },
-                { "Condition": "TacCondition" }
-            ]
-        },
-        "BastionJobserverCondition": {
-            "Fn::And": [
-                { "Condition": "BastionCondition" },
-                { "Condition": "JobserverCondition" }
-            ]
-        },
-        "BastionDistantRunCondition": {
-            "Fn::And": [
-                { "Condition": "BastionCondition" },
-                { "Condition": "DistantRunCondition" }
-            ]
-        },
-        "BastionNexusCondition": {
-            "Fn::And": [
-                { "Condition": "BastionCondition" },
-                { "Condition": "NexusCondition" }
-            ]
-        },
-        "BastionLogserverCondition": {
-            "Fn::And": [
-                { "Condition": "BastionCondition" },
-                { "Condition": "LogserverCondition" }
-            ]
-        },
-        "BastionCommandlineCondition": {
-            "Fn::And": [
-                { "Condition": "BastionCondition" },
-                { "Condition": "CommandlineCondition" }
-            ]
-        },
-        "BastionGitCondition": {
-            "Fn::And": [
-                { "Condition": "BastionCondition" },
-                { "Condition": "GitCondition" }
-            ]
-        },
-        "StudioEmrCondition": {
-            "Fn::And": [
-                { "Condition": "StudioCondition" },
-                { "Condition": "EmrCondition" }
-            ]
-        },
-        "JobserverEmrCondition": {
-            "Fn::And": [
-                { "Condition": "JobserverCondition" },
-                { "Condition": "EmrCondition" }
-            ]
-        },
-        "DistantRunEmrCondition": {
-            "Fn::And": [
-                { "Condition": "DistantRunCondition" },
-                { "Condition": "EmrCondition" }
-            ]
-        },
-        "BastionEmrCondition": {
-            "Fn::And": [
-                { "Condition": "BastionCondition" },
-                { "Condition": "EmrCondition" }
-            ]
-        },
-        "StudioRedshiftCondition": {
-            "Fn::And": [
-                { "Condition": "StudioCondition" },
-                { "Condition": "RedshiftCondition" }
-            ]
-        },
-        "JobserverRedshiftCondition": {
-            "Fn::And": [
-                { "Condition": "JobserverCondition" },
-                { "Condition": "RedshiftCondition" }
-            ]
-        },
-        "DistantRunRedshiftCondition": {
-            "Fn::And": [
-                { "Condition": "DistantRunCondition" },
-                { "Condition": "RedshiftCondition" }
-            ]
-        },
-        "BastionRedshiftCondition": {
-            "Fn::And": [
-                { "Condition": "BastionCondition" },
-                { "Condition": "RedshiftCondition" }
-            ]
-        }
-    },
-    "Resources": {
-        "DatabaseIngressBastion": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Condition": "BastionDatabaseCondition",
-            "Properties": {
-                "GroupId": { "Ref": "DatabaseSecurityGroupID" },
-                "SourceSecurityGroupId": { "Ref": "BastionSecurityGroupID" },
-                "IpProtocol": "tcp",
-                "FromPort": "3306",
-                "ToPort": "3306"
-            }
-        },
-        "StudioIngressBastionSsh": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Condition": "BastionStudioCondition",
-            "Properties": {
-                "GroupId": { "Ref": "StudioSecurityGroupID" },
-                "SourceSecurityGroupId": { "Ref": "BastionSecurityGroupID" },
-                "IpProtocol": "tcp",
-                "FromPort": "22",
-                "ToPort": "22"
-            }
-        },
-        "StudioIngressEmr": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Condition": "StudioEmrCondition",
-            "Properties": {
-                "GroupId": { "Ref": "StudioSecurityGroupID" },
-                "SourceSecurityGroupId": { "Ref": "EmrSecurityGroupID" },
-                "IpProtocol": "tcp",
-                "FromPort": "0",
-                "ToPort": "65535"
-            }
-        },
-        "TacIngressBastionSsh": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Condition": "BastionTacCondition",
-            "Properties": {
-                "GroupId": { "Ref": "TacSecurityGroupID" },
-                "SourceSecurityGroupId": { "Ref": "BastionSecurityGroupID" },
-                "IpProtocol": "tcp",
-                "FromPort": "22",
-                "ToPort": "22"
-            }
-        },
-        "TacIngressBastion": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Condition": "BastionTacCondition",
-            "Properties": {
-                "GroupId": { "Ref": "TacSecurityGroupID" },
-                "SourceSecurityGroupId": { "Ref": "BastionSecurityGroupID" },
-                "IpProtocol": "tcp",
-                "FromPort": "8080",
-                "ToPort": "8080"
-            }
-        },
-        "JobserverIngressBastionSsh": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Condition": "BastionJobserverCondition",
-            "Properties": {
-                "GroupId": { "Ref": "JobserverSecurityGroupID" },
-                "SourceSecurityGroupId": { "Ref": "BastionSecurityGroupID" },
-                "IpProtocol": "tcp",
-                "FromPort": "22",
-                "ToPort": "22"
-            }
-        },
-        "JobserverIngressEmr": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Condition": "JobserverEmrCondition",
-            "Properties": {
-                "GroupId": { "Ref": "JobserverSecurityGroupID" },
-                "SourceSecurityGroupId": { "Ref": "EmrSecurityGroupID" },
-                "IpProtocol": "tcp",
-                "FromPort": "0",
-                "ToPort": "65535"
-            }
-        },
-        "DistantRunIngressBastionSsh": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Condition": "BastionDistantRunCondition",
-            "Properties": {
-                "GroupId": { "Ref": "DistantRunSecurityGroupID" },
-                "SourceSecurityGroupId": { "Ref": "BastionSecurityGroupID" },
-                "IpProtocol": "tcp",
-                "FromPort": "22",
-                "ToPort": "22"
-            }
-        },
-        "DistantRunIngressEmr": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Condition": "DistantRunEmrCondition",
-            "Properties": {
-                "GroupId": { "Ref": "DistantRunSecurityGroupID" },
-                "SourceSecurityGroupId": { "Ref": "EmrSecurityGroupID" },
-                "IpProtocol": "tcp",
-                "FromPort": "0",
-                "ToPort": "65535"
-            }
-        },
-        "NexusIngressBastionSsh": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Condition": "BastionNexusCondition",
-            "Properties": {
-                "GroupId": { "Ref": "NexusSecurityGroupID" },
-                "SourceSecurityGroupId": { "Ref": "BastionSecurityGroupID" },
-                "IpProtocol": "tcp",
-                "FromPort": "22",
-                "ToPort": "22"
-            }
-        },
-        "NexusIngressBastion": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Condition": "BastionNexusCondition",
-            "Properties": {
-                "GroupId": { "Ref": "NexusSecurityGroupID" },
-                "SourceSecurityGroupId": { "Ref": "BastionSecurityGroupID" },
-                "IpProtocol": "tcp",
-                "FromPort": "8081",
-                "ToPort": "8081"
-            }
-        },
-        "LogserverIngressBastionSsh": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Condition": "BastionLogserverCondition",
-            "Properties": {
-                "GroupId": { "Ref": "LogserverSecurityGroupID" },
-                "SourceSecurityGroupId": { "Ref": "BastionSecurityGroupID" },
-                "IpProtocol": "tcp",
-                "FromPort": "22",
-                "ToPort": "22"
-            }
-        },
-        "LogserverIngressBastionElastic": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Condition": "BastionLogserverCondition",
-            "Properties": {
-                "GroupId": { "Ref": "LogserverSecurityGroupID" },
-                "SourceSecurityGroupId": { "Ref": "BastionSecurityGroupID" },
-                "IpProtocol": "tcp",
-                "FromPort": "9200",
-                "ToPort": "9200"
-            }
-        },
-        "LogserverIngressBastionKibana": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Condition": "BastionLogserverCondition",
-            "Properties": {
-                "GroupId": { "Ref": "LogserverSecurityGroupID" },
-                "SourceSecurityGroupId": { "Ref": "BastionSecurityGroupID" },
-                "IpProtocol": "tcp",
-                "FromPort": "5601",
-                "ToPort": "5601"
-            }
-        },
-        "CommandlineIngressBastionSsh": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Condition": "BastionCommandlineCondition",
-            "Properties": {
-                "GroupId": { "Ref": "CommandlineSecurityGroupID" },
-                "SourceSecurityGroupId": { "Ref": "BastionSecurityGroupID" },
-                "IpProtocol": "tcp",
-                "FromPort": "22",
-                "ToPort": "22"
-            }
-        },
-        "CommandlineIngressBastionCmdShell": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Condition": "BastionCommandlineCondition",
-            "Properties": {
-                "GroupId": { "Ref": "CommandlineSecurityGroupID" },
-                "SourceSecurityGroupId": { "Ref": "BastionSecurityGroupID" },
-                "IpProtocol": "tcp",
-                "FromPort": "8002",
-                "ToPort": "8002"
-            }
-        },
-        "GitIngressBastionSsh": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Condition": "BastionGitCondition",
-            "Properties": {
-                "GroupId": { "Ref": "GitSecurityGroupID" },
-                "SourceSecurityGroupId": { "Ref": "BastionSecurityGroupID" },
-                "IpProtocol": "tcp",
-                "FromPort": "22",
-                "ToPort": "22"
-            }
-        },
-        "GitIngressBastionHttp": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Condition": "BastionGitCondition",
-            "Properties": {
-                "GroupId": { "Ref": "GitSecurityGroupID" },
-                "SourceSecurityGroupId": { "Ref": "BastionSecurityGroupID" },
-                "IpProtocol": "tcp",
-                "FromPort": "80",
-                "ToPort": "80"
-            }
-        },
-        "GitIngressBastionHttps": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Condition": "BastionGitCondition",
-            "Properties": {
-                "GroupId": { "Ref": "GitSecurityGroupID" },
-                "SourceSecurityGroupId": { "Ref": "BastionSecurityGroupID" },
-                "IpProtocol": "tcp",
-                "FromPort": "80",
-                "ToPort": "80"
-            }
-        },
-        "RedshiftIngressBastion": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Condition": "BastionRedshiftCondition",
-            "Properties": {
-                "GroupId": {
-                    "Ref": "RedshiftSecurityGroupID"
-                },
-                "IpProtocol": "tcp",
-                "FromPort": { "Ref": "RedshiftPort" },
-                "ToPort": { "Ref": "RedshiftPort" },
-                "SourceSecurityGroupId": {
-                    "Ref": "BastionSecurityGroupID"
-                }
-            }
-        },
-        "RedshiftIngressStudio": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Condition": "StudioRedshiftCondition",
-            "Properties": {
-                "GroupId": {
-                    "Ref": "RedshiftSecurityGroupID"
-                },
-                "IpProtocol": "tcp",
-                "FromPort": { "Ref": "RedshiftPort" },
-                "ToPort": { "Ref": "RedshiftPort" },
-                "SourceSecurityGroupId": {
-                    "Ref": "StudioSecurityGroupID"
-                }
-            }
-        },
-        "RedshiftIngressJobserver": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Condition": "JobserverRedshiftCondition",
-            "Properties": {
-                "GroupId": {
-                    "Ref": "RedshiftSecurityGroupID"
-                },
-                "IpProtocol": "tcp",
-                "FromPort": { "Ref": "RedshiftPort" },
-                "ToPort": { "Ref": "RedshiftPort" },
-                "SourceSecurityGroupId": {
-                    "Ref": "JobserverSecurityGroupID"
-                }
-            }
-        },
-        "RedshiftIngressDistantRun": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Condition": "DistantRunRedshiftCondition",
-            "Properties": {
-                "GroupId": {
-                    "Ref": "RedshiftSecurityGroupID"
-                },
-                "IpProtocol": "tcp",
-                "FromPort": { "Ref": "RedshiftPort" },
-                "ToPort": { "Ref": "RedshiftPort" },
-                "SourceSecurityGroupId": {
-                    "Ref": "DistantRunSecurityGroupID"
-                }
-            }
-        },
-        "EmrIngressStudio": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Condition": "StudioEmrCondition",
-            "Properties": {
-                "IpProtocol": "tcp",
-                "FromPort": "0",
-                "ToPort": "65535",
-                "SourceSecurityGroupId": {
-                    "Ref": "StudioSecurityGroupID"
-                },
-                "GroupId": {
-                    "Ref": "EmrSecurityGroupID"
-                }
-            }
-        },
-        "EmrIngressJobserver": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Condition": "JobserverEmrCondition",
-            "Properties": {
-                "IpProtocol": "tcp",
-                "FromPort": "0",
-                "ToPort": "65535",
-                "SourceSecurityGroupId": {
-                    "Ref": "JobserverSecurityGroupID"
-                },
-                "GroupId": {
-                    "Ref": "EmrSecurityGroupID"
-                }
-            }
-        },
-        "EmrIngressDistantRun": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Condition": "DistantRunEmrCondition",
-            "Properties": {
-                "IpProtocol": "tcp",
-                "FromPort": "0",
-                "ToPort": "65535",
-                "SourceSecurityGroupId": {
-                    "Ref": "DistantRunSecurityGroupID"
-                },
-                "GroupId": {
-                    "Ref": "EmrSecurityGroupID"
-                }
-            }
-        },
-        "EmrIngressBastion": {
-            "Type": "AWS::EC2::SecurityGroupIngress",
-            "Condition": "BastionEmrCondition",
-            "Properties": {
-                "IpProtocol": "tcp",
-                "FromPort": "0",
-                "ToPort": "65535",
-                "SourceSecurityGroupId": {
-                    "Ref": "BastionSecurityGroupID"
-                },
-                "GroupId": {
-                    "Ref": "EmrSecurityGroupID"
-                }
-            }
-        }
-    },
-    "Outputs": {
-    }
-}
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Create Oodle Security Groups (qs-1nrlpbhnk)
+Parameters:
+  BastionSecurityGroupID:
+    Description: Bastion Server Security Group.
+    Type: String
+  DatabaseSecurityGroupID:
+    Description: Database Security Group.
+    Type: String
+  RedshiftSecurityGroupID:
+    Description: Redshift Security Group.
+    Type: String
+  RedshiftPort:
+    Description: RedShift Port
+    Type: String
+  EmrSecurityGroupID:
+    Description: Database Security Group.
+    Type: String
+  StudioSecurityGroupID:
+    Description: Talend Studio Security Group.
+    Type: String
+  TacSecurityGroupID:
+    Description: TAC Security Group.
+    Type: String
+  JobserverSecurityGroupID:
+    Description: Jobserver Security Group.
+    Type: String
+  DistantRunSecurityGroupID:
+    Description: DistantRun Security Group.
+    Type: String
+  NexusSecurityGroupID:
+    Description: Nexus Security Group.
+    Type: String
+  LogserverSecurityGroupID:
+    Description: Logserver Security Group.
+    Type: String
+  CommandlineSecurityGroupID:
+    Description: Commandline Security Group.
+    Type: String
+  GitSecurityGroupID:
+    Description: Git Security Group.
+    Type: String
+Mappings: {}
+Conditions:
+  BastionCondition: !Not
+    - !Equals
+      - ''
+      - !Ref 'BastionSecurityGroupID'
+  RedshiftCondition: !Not
+    - !Equals
+      - ''
+      - !Ref 'RedshiftSecurityGroupID'
+  EmrCondition: !Not
+    - !Equals
+      - ''
+      - !Ref 'EmrSecurityGroupID'
+  DatabaseCondition: !Not
+    - !Equals
+      - ''
+      - !Ref 'DatabaseSecurityGroupID'
+  StudioCondition: !Not
+    - !Equals
+      - ''
+      - !Ref 'StudioSecurityGroupID'
+  TacCondition: !Not
+    - !Equals
+      - ''
+      - !Ref 'TacSecurityGroupID'
+  JobserverCondition: !Not
+    - !Equals
+      - ''
+      - !Ref 'JobserverSecurityGroupID'
+  DistantRunCondition: !Not
+    - !Equals
+      - ''
+      - !Ref 'DistantRunSecurityGroupID'
+  NexusCondition: !Not
+    - !Equals
+      - ''
+      - !Ref 'NexusSecurityGroupID'
+  LogserverCondition: !Not
+    - !Equals
+      - ''
+      - !Ref 'LogserverSecurityGroupID'
+  CommandlineCondition: !Not
+    - !Equals
+      - ''
+      - !Ref 'CommandlineSecurityGroupID'
+  GitCondition: !Not
+    - !Equals
+      - ''
+      - !Ref 'GitSecurityGroupID'
+  BastionDatabaseCondition: !And
+    - !Condition 'BastionCondition'
+    - !Condition 'DatabaseCondition'
+  BastionStudioCondition: !And
+    - !Condition 'BastionCondition'
+    - !Condition 'StudioCondition'
+  BastionTacCondition: !And
+    - !Condition 'BastionCondition'
+    - !Condition 'TacCondition'
+  BastionJobserverCondition: !And
+    - !Condition 'BastionCondition'
+    - !Condition 'JobserverCondition'
+  BastionDistantRunCondition: !And
+    - !Condition 'BastionCondition'
+    - !Condition 'DistantRunCondition'
+  BastionNexusCondition: !And
+    - !Condition 'BastionCondition'
+    - !Condition 'NexusCondition'
+  BastionLogserverCondition: !And
+    - !Condition 'BastionCondition'
+    - !Condition 'LogserverCondition'
+  BastionCommandlineCondition: !And
+    - !Condition 'BastionCondition'
+    - !Condition 'CommandlineCondition'
+  BastionGitCondition: !And
+    - !Condition 'BastionCondition'
+    - !Condition 'GitCondition'
+  StudioEmrCondition: !And
+    - !Condition 'StudioCondition'
+    - !Condition 'EmrCondition'
+  JobserverEmrCondition: !And
+    - !Condition 'JobserverCondition'
+    - !Condition 'EmrCondition'
+  DistantRunEmrCondition: !And
+    - !Condition 'DistantRunCondition'
+    - !Condition 'EmrCondition'
+  BastionEmrCondition: !And
+    - !Condition 'BastionCondition'
+    - !Condition 'EmrCondition'
+  StudioRedshiftCondition: !And
+    - !Condition 'StudioCondition'
+    - !Condition 'RedshiftCondition'
+  JobserverRedshiftCondition: !And
+    - !Condition 'JobserverCondition'
+    - !Condition 'RedshiftCondition'
+  DistantRunRedshiftCondition: !And
+    - !Condition 'DistantRunCondition'
+    - !Condition 'RedshiftCondition'
+  BastionRedshiftCondition: !And
+    - !Condition 'BastionCondition'
+    - !Condition 'RedshiftCondition'
+Resources:
+  DatabaseIngressBastion:
+    Type: AWS::EC2::SecurityGroupIngress
+    Condition: BastionDatabaseCondition
+    Properties:
+      GroupId: !Ref 'DatabaseSecurityGroupID'
+      SourceSecurityGroupId: !Ref 'BastionSecurityGroupID'
+      IpProtocol: tcp
+      FromPort: 3306
+      ToPort: 3306
+  StudioIngressBastionSsh:
+    Type: AWS::EC2::SecurityGroupIngress
+    Condition: BastionStudioCondition
+    Properties:
+      GroupId: !Ref 'StudioSecurityGroupID'
+      SourceSecurityGroupId: !Ref 'BastionSecurityGroupID'
+      IpProtocol: tcp
+      FromPort: 22
+      ToPort: 22
+  StudioIngressEmr:
+    Type: AWS::EC2::SecurityGroupIngress
+    Condition: StudioEmrCondition
+    Properties:
+      GroupId: !Ref 'StudioSecurityGroupID'
+      SourceSecurityGroupId: !Ref 'EmrSecurityGroupID'
+      IpProtocol: tcp
+      FromPort: 0
+      ToPort: 65535
+  TacIngressBastionSsh:
+    Type: AWS::EC2::SecurityGroupIngress
+    Condition: BastionTacCondition
+    Properties:
+      GroupId: !Ref 'TacSecurityGroupID'
+      SourceSecurityGroupId: !Ref 'BastionSecurityGroupID'
+      IpProtocol: tcp
+      FromPort: 22
+      ToPort: 22
+  TacIngressBastion:
+    Type: AWS::EC2::SecurityGroupIngress
+    Condition: BastionTacCondition
+    Properties:
+      GroupId: !Ref 'TacSecurityGroupID'
+      SourceSecurityGroupId: !Ref 'BastionSecurityGroupID'
+      IpProtocol: tcp
+      FromPort: 8080
+      ToPort: 8080
+  JobserverIngressBastionSsh:
+    Type: AWS::EC2::SecurityGroupIngress
+    Condition: BastionJobserverCondition
+    Properties:
+      GroupId: !Ref 'JobserverSecurityGroupID'
+      SourceSecurityGroupId: !Ref 'BastionSecurityGroupID'
+      IpProtocol: tcp
+      FromPort: 22
+      ToPort: 22
+  JobserverIngressEmr:
+    Type: AWS::EC2::SecurityGroupIngress
+    Condition: JobserverEmrCondition
+    Properties:
+      GroupId: !Ref 'JobserverSecurityGroupID'
+      SourceSecurityGroupId: !Ref 'EmrSecurityGroupID'
+      IpProtocol: tcp
+      FromPort: 0
+      ToPort: 65535
+  DistantRunIngressBastionSsh:
+    Type: AWS::EC2::SecurityGroupIngress
+    Condition: BastionDistantRunCondition
+    Properties:
+      GroupId: !Ref 'DistantRunSecurityGroupID'
+      SourceSecurityGroupId: !Ref 'BastionSecurityGroupID'
+      IpProtocol: tcp
+      FromPort: 22
+      ToPort: 22
+  DistantRunIngressEmr:
+    Type: AWS::EC2::SecurityGroupIngress
+    Condition: DistantRunEmrCondition
+    Properties:
+      GroupId: !Ref 'DistantRunSecurityGroupID'
+      SourceSecurityGroupId: !Ref 'EmrSecurityGroupID'
+      IpProtocol: tcp
+      FromPort: 0
+      ToPort: 65535
+  NexusIngressBastionSsh:
+    Type: AWS::EC2::SecurityGroupIngress
+    Condition: BastionNexusCondition
+    Properties:
+      GroupId: !Ref 'NexusSecurityGroupID'
+      SourceSecurityGroupId: !Ref 'BastionSecurityGroupID'
+      IpProtocol: tcp
+      FromPort: 22
+      ToPort: 22
+  NexusIngressBastion:
+    Type: AWS::EC2::SecurityGroupIngress
+    Condition: BastionNexusCondition
+    Properties:
+      GroupId: !Ref 'NexusSecurityGroupID'
+      SourceSecurityGroupId: !Ref 'BastionSecurityGroupID'
+      IpProtocol: tcp
+      FromPort: 8081
+      ToPort: 8081
+  LogserverIngressBastionSsh:
+    Type: AWS::EC2::SecurityGroupIngress
+    Condition: BastionLogserverCondition
+    Properties:
+      GroupId: !Ref 'LogserverSecurityGroupID'
+      SourceSecurityGroupId: !Ref 'BastionSecurityGroupID'
+      IpProtocol: tcp
+      FromPort: 22
+      ToPort: 22
+  LogserverIngressBastionElastic:
+    Type: AWS::EC2::SecurityGroupIngress
+    Condition: BastionLogserverCondition
+    Properties:
+      GroupId: !Ref 'LogserverSecurityGroupID'
+      SourceSecurityGroupId: !Ref 'BastionSecurityGroupID'
+      IpProtocol: tcp
+      FromPort: 9200
+      ToPort: 9200
+  LogserverIngressBastionKibana:
+    Type: AWS::EC2::SecurityGroupIngress
+    Condition: BastionLogserverCondition
+    Properties:
+      GroupId: !Ref 'LogserverSecurityGroupID'
+      SourceSecurityGroupId: !Ref 'BastionSecurityGroupID'
+      IpProtocol: tcp
+      FromPort: 5601
+      ToPort: 5601
+  CommandlineIngressBastionSsh:
+    Type: AWS::EC2::SecurityGroupIngress
+    Condition: BastionCommandlineCondition
+    Properties:
+      GroupId: !Ref 'CommandlineSecurityGroupID'
+      SourceSecurityGroupId: !Ref 'BastionSecurityGroupID'
+      IpProtocol: tcp
+      FromPort: 22
+      ToPort: 22
+  CommandlineIngressBastionCmdShell:
+    Type: AWS::EC2::SecurityGroupIngress
+    Condition: BastionCommandlineCondition
+    Properties:
+      GroupId: !Ref 'CommandlineSecurityGroupID'
+      SourceSecurityGroupId: !Ref 'BastionSecurityGroupID'
+      IpProtocol: tcp
+      FromPort: 8002
+      ToPort: 8002
+  GitIngressBastionSsh:
+    Type: AWS::EC2::SecurityGroupIngress
+    Condition: BastionGitCondition
+    Properties:
+      GroupId: !Ref 'GitSecurityGroupID'
+      SourceSecurityGroupId: !Ref 'BastionSecurityGroupID'
+      IpProtocol: tcp
+      FromPort: 22
+      ToPort: 22
+  GitIngressBastionHttp:
+    Type: AWS::EC2::SecurityGroupIngress
+    Condition: BastionGitCondition
+    Properties:
+      GroupId: !Ref 'GitSecurityGroupID'
+      SourceSecurityGroupId: !Ref 'BastionSecurityGroupID'
+      IpProtocol: tcp
+      FromPort: 80
+      ToPort: 80
+  GitIngressBastionHttps:
+    Type: AWS::EC2::SecurityGroupIngress
+    Condition: BastionGitCondition
+    Properties:
+      GroupId: !Ref 'GitSecurityGroupID'
+      SourceSecurityGroupId: !Ref 'BastionSecurityGroupID'
+      IpProtocol: tcp
+      FromPort: 80
+      ToPort: 80
+  RedshiftIngressBastion:
+    Type: AWS::EC2::SecurityGroupIngress
+    Condition: BastionRedshiftCondition
+    Properties:
+      GroupId: !Ref 'RedshiftSecurityGroupID'
+      IpProtocol: tcp
+      FromPort: !Ref 'RedshiftPort'
+      ToPort: !Ref 'RedshiftPort'
+      SourceSecurityGroupId: !Ref 'BastionSecurityGroupID'
+  RedshiftIngressStudio:
+    Type: AWS::EC2::SecurityGroupIngress
+    Condition: StudioRedshiftCondition
+    Properties:
+      GroupId: !Ref 'RedshiftSecurityGroupID'
+      IpProtocol: tcp
+      FromPort: !Ref 'RedshiftPort'
+      ToPort: !Ref 'RedshiftPort'
+      SourceSecurityGroupId: !Ref 'StudioSecurityGroupID'
+  RedshiftIngressJobserver:
+    Type: AWS::EC2::SecurityGroupIngress
+    Condition: JobserverRedshiftCondition
+    Properties:
+      GroupId: !Ref 'RedshiftSecurityGroupID'
+      IpProtocol: tcp
+      FromPort: !Ref 'RedshiftPort'
+      ToPort: !Ref 'RedshiftPort'
+      SourceSecurityGroupId: !Ref 'JobserverSecurityGroupID'
+  RedshiftIngressDistantRun:
+    Type: AWS::EC2::SecurityGroupIngress
+    Condition: DistantRunRedshiftCondition
+    Properties:
+      GroupId: !Ref 'RedshiftSecurityGroupID'
+      IpProtocol: tcp
+      FromPort: !Ref 'RedshiftPort'
+      ToPort: !Ref 'RedshiftPort'
+      SourceSecurityGroupId: !Ref 'DistantRunSecurityGroupID'
+  EmrIngressStudio:
+    Type: AWS::EC2::SecurityGroupIngress
+    Condition: StudioEmrCondition
+    Properties:
+      IpProtocol: tcp
+      FromPort: 0
+      ToPort: 65535
+      SourceSecurityGroupId: !Ref 'StudioSecurityGroupID'
+      GroupId: !Ref 'EmrSecurityGroupID'
+  EmrIngressJobserver:
+    Type: AWS::EC2::SecurityGroupIngress
+    Condition: JobserverEmrCondition
+    Properties:
+      IpProtocol: tcp
+      FromPort: 0
+      ToPort: 65535
+      SourceSecurityGroupId: !Ref 'JobserverSecurityGroupID'
+      GroupId: !Ref 'EmrSecurityGroupID'
+  EmrIngressDistantRun:
+    Type: AWS::EC2::SecurityGroupIngress
+    Condition: DistantRunEmrCondition
+    Properties:
+      IpProtocol: tcp
+      FromPort: 0
+      ToPort: 65535
+      SourceSecurityGroupId: !Ref 'DistantRunSecurityGroupID'
+      GroupId: !Ref 'EmrSecurityGroupID'
+  EmrIngressBastion:
+    Type: AWS::EC2::SecurityGroupIngress
+    Condition: BastionEmrCondition
+    Properties:
+      IpProtocol: tcp
+      FromPort: 0
+      ToPort: 65535
+      SourceSecurityGroupId: !Ref 'BastionSecurityGroupID'
+      GroupId: !Ref 'EmrSecurityGroupID'
+Outputs: {}

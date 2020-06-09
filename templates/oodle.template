@@ -36,7 +36,6 @@ Metadata:
           - NexusInstanceType
           - StudioInstanceType
           - GitInstanceType
-          - BastionInstanceType
           - EmrCoreInstanceType
           - EmrMasterInstanceType
           - RedshiftNodeType
@@ -168,8 +167,6 @@ Metadata:
         default: Nexus Instance Type
       StudioInstanceType:
         default: Studio Instance Type
-      BastionInstanceType:
-        default: Bastion Instance Type
       JobserverAutoscaleDesiredCapacity:
         default: Jobserver Autoscale Desired Capacity
       JobserverAutoscaleMaxSize:
@@ -433,23 +430,6 @@ Parameters:
       - c4.2xlarge
       - c4.4xlarge
     ConstraintDescription: must be a valid EC2 instance type.
-  BastionInstanceType:
-    Description: EC2 Instance type for Bastion host
-    Type: String
-    Default: t2.micro
-    AllowedValues:
-      - t2.nano
-      - t2.micro
-      - t2.small
-      - t2.medium
-      - t2.large
-      - m3.large
-      - m3.xlarge
-      - m3.2xlarge
-      - m4.large
-      - m4.xlarge
-      - m4.2xlarge
-      - m4.4xlarge
   CreateEmr:
     Description: Set this to true to create a new EMR instance. If you do not wish
       to use EMR or want to use an existing EMR, set this to false.
@@ -878,7 +858,7 @@ Resources:
         BastionSecurityGroup: !GetAtt 'BastionSecurityGroupsStack.Outputs.BastionSecurityGroupID'
         NumBastionHosts: !Ref 'NumBastionHosts'
         BastionAMIOS: Amazon-Linux-HVM
-        BastionInstanceType: !Ref 'BastionInstanceType'
+        BastionInstanceType: t2.micro
         BastionBanner: https://aws-quickstart.s3.amazonaws.com/quickstart-linux-bastion/scripts/banner_message.txt
         EnableBanner: 'false'
         EnableTCPForwarding: 'true'
@@ -919,7 +899,7 @@ Resources:
         SecurityGroupIds: !GetAtt 'TalendSecurityGroupsStack.Outputs.StudioSecurityGroupID'
         TalendResourceBucket: !Ref 'TalendResourceBucket'
         TacStack: !GetAtt 'TalendServersStack.Outputs.TacStack'
-      TimeoutInMinutes: '10'
+      TimeoutInMinutes: 10
   RedshiftStack:
     Type: AWS::CloudFormation::Stack
     Condition: CreateRedshiftCondition
@@ -958,7 +938,7 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub 'http://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}modules/talend/templates/talend-servers.template'
-      TimeoutInMinutes: '30'
+      TimeoutInMinutes: 30
       Parameters:
         QSS3BucketName: !Ref 'QSS3BucketName'
         QSS3KeyPrefix: !Sub '${QSS3KeyPrefix}modules/talend/'
@@ -1025,7 +1005,7 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub 'http://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/credential-store.template'
-      TimeoutInMinutes: '10'
+      TimeoutInMinutes: 10
       Parameters:
         CredentialBucket: !Ref 'CredentialBucket'
         CredentialBucketDnsName: !GetAtt 'CredentialBucket.DomainName'

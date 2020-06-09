@@ -1,737 +1,640 @@
-		{
-    "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "This template uses the Talend Server templates with the AWS VPC quickstart.  The AWS VPC creates a multi-AZ, multi-subnet VPC infrastructure with managed NAT gateways in the public subnet for each Availability Zone. The Talend servers are deployed to the public subnet with the exception of the Jobservers which are deployed to the private subnet. **WARNING** This template creates AWS resources. You will be billed for the AWS resources used if you create a stack from this template. (qs-1nrlpbhnp)",
-    
-		"Metadata": {
-        "AWS::CloudFormation::Interface": {
-            "ParameterGroups": [
-                {
-                    "Label": {
-                        "default": "Quick Start"
-                    },
-                    "Parameters": [
-                        "QSS3BucketName",
-                        "QSS3KeyPrefix",
-                        "TalendLicenseBucket"
-                    ]
-                },
-
-                {
-                    "Label": {
-                        "default": "Availability Zone configuration"
-                    },
-                    "Parameters": [
-                        "AvailabilityZones"
-                        
-                    ]
-                },
-                {
-                    "Label": {
-                        "default": "Network configuration"
-                    },
-                    "Parameters": [
-                        "RemoteAccessCIDR"
-                    ]
-                },
-                {
-                    "Label": {
-                        "default": "Amazon EC2 configuration"
-                    },
-                    "Parameters": [
-                        "KeyPairName",
-                        "TacInstanceType",
-                        "LogserverInstanceType",
-                        "JobserverInstanceType",
-                        "NexusInstanceType",
-						"BastionInstanceType",
-						"StudioInstanceType"
-                    ]
-                },
-
-                {
-                    "Label": {
-                        "default": "Redshift configuration"
-                    },
-                    "Parameters": [
-                        "RedshiftHost",
-                        "RedshiftUsername",
-                        "RedshiftPassword",
-                        "RedshiftDbName"
-                    ]
-                },
-                {
-                    "Label": {
-                        "default": "Talend Administration Center configuration"
-                    },
-                    "Parameters": [
-                        "TacDbHost",
-                        "MasterDbUser",
-                        "MasterDbPassword",
-                        "TacDbUser",
-                        "TacDbPassword",
-						"TacPassword",
-                        "DbClass",
-                        "DbAllocatedStorage",
-						"AmcDbUser",
-						"AmcDbPassword"
-                    ]
-                },
-                {
-                    "Label": {
-                        "default": "Talend Nexus configuration"
-                    },
-                    "Parameters": [
-                        "NexusAdminUserid",
-                        "NexusAdminPassword"
-                    ]
-                },
-                {
-                    "Label": {
-                        "default": "Talend Git configuration"
-                    },
-                    "Parameters": [
-                        "GitHost",
-                        "GitRepo",
-                        "GitAdminUserid",
-                        "GitAdminPassword",
-                        "GitAdminEmail",
-                        "GitTacUserid",
-                        "GitTacPassword",
-                        "GitTacEmail"
-                    ]
-                }
-            ],
-            "ParameterLabels": {
-                "QSS3BucketName": {
-                    "default": "Quick Start S3 Bucket"
-                },
-                "QSS3KeyPrefix": {
-                    "default": "Quick Start S3 Key Prefix"
-                },
-                "TalendLicenseBucket": {
-                    "default": "Talend License Bucket"
-                },
-
-                "AvailabilityZones": {
-                    "default": "Availability Zones"
-                },
-             
-
-
-                "RemoteAccessCIDR": {
-                    "default": "Remote Access CIDR"
-                },
-                "KeyPairName": {
-                    "default": "Key Pair Name"
-                },
-                "TacInstanceType": {
-                    "default": "TAC Instance Type"
-                },
-
-                "TacDbUser": {
-                    "default": "TAC Database Username"
-                },
-                "TacDbPassword": {
-                    "default": "TAC Database Password"
-                },
-                "TacDbHost": {
-                    "default": "TAC Database Host"
-                },
-                "MasterDbUser": {
-                    "default": "TAC Master Database User"
-                },
-                "MasterDbPassword": {
-                    "default": "TAC Master Database Password"
-                },
-                "DbClass": {
-                    "default": "Database Instance Class"
-                },
-                "DbAllocatedStorage": {
-                    "default": "Database Allocated Storage"
-                },
-
-                "NexusAdminUserid": {
-                    "default": "Nexus Admin Userid"
-                },
-                "NexusAdminPassword": {
-                    "default": "Nexus Admin Password"
-                },
-                "LogserverInstanceType": {
-                    "default": "Logserver Instance Type"
-                },
-                "JobserverInstanceType": {
-                    "default": "Jobserver Instance Type"
-                },
-                "NexusInstanceType": {
-                    "default": "Nexus Instance Type"
-                },
-
-                "RedshiftHost": {
-                    "default": "Redshift Host"
-                },
-                "RedshiftDbName": {
-                    "default": "Redshift Database Name"
-                },
-                "RedshiftUsername": {
-                    "default": "Redshift Username"
-                },
-                "RedshiftPassword": {
-                    "default": "Redshift Password"
-                },
-                "GitHost": {
-                    "default": "Git Host"
-                },
-                "GitRepo": {
-                    "default": "Git Repository"
-                },
-                "GitAdminUserid": {
-                    "default": "Git Admin Userid"
-                },
-                "GitAdminPassword": {
-                    "default": "Git Admin Password"
-                },
-                "GitAdminEmail": {
-                    "default": "Git Admin Email"
-                },
-                "GitTacUserid": {
-                    "default": "Git TAC Userid"
-                },
-                "GitTacPassword": {
-                    "default": "Git TAC Password"
-                },
-                "GitTacEmail": {
-                    "default": "Git TAC Email"
-                }
-            }
-        }
-    },
-    "Parameters": {
-        "QSS3BucketName": {
-            "AllowedPattern": "^[0-9a-zA-Z]+([0-9a-zA-Z-.]*[0-9a-zA-Z])*$",
-            "ConstraintDescription": "Quick Start bucket name can include numbers, lowercase letters, uppercase letters, periods (.), and hyphens (-). It cannot start or end with a hyphen (-) or period (.).",
-            "Default": "oodle.quickstart.talend",
-            "Description": "S3 bucket name for the Quick Start assets. Quick Start bucket name can include numbers, lowercase letters, uppercase letters, periods (.), and hyphens (-). It cannot start or end with a hyphen (-) or period (.).",
-            "Type": "String"
-        },
-        "QSS3KeyPrefix": {
-            "AllowedPattern": "^[0-9a-zA-Z-/]*$",
-            "ConstraintDescription": "Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/).  Prefix cannot start with a slash but must end with a slash unless it is the empty string.",
-            "Default": "",
-            "Description": "S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/).  Prefix cannot start with a slash but must end with a slash unless it is the empty string.",
-            "Type": "String"
-        },
-        "TalendLicenseBucket": {
-            "Description": "Bucket for license file received in email.",
-            "Type": "String",
-			"AllowedPattern": "^[0-9a-zA-Z]+([0-9a-zA-Z-.]*[0-9a-zA-Z])*$"
-        },
-        "TacInstanceType": {
-            "Description": "TAC EC2 instance type",
-            "Type": "String",
-            "Default": "t2.medium",
-            "AllowedValues": [
-                "t1.micro",
-                "t2.micro",
-                "t2.small",
-                "t2.medium",
-                "m1.small",
-                "m1.medium",
-                "m1.large",
-                "m1.xlarge",
-                "m2.xlarge",
-                "m2.2xlarge",
-                "m2.4xlarge",
-                "m3.medium",
-                "m3.large",
-                "m3.xlarge",
-                "m3.2xlarge",
-                "c1.medium",
-                "c1.xlarge",
-                "c3.large",
-                "c3.xlarge",
-                "c3.2xlarge",
-                "c3.4xlarge",
-                "c3.8xlarge",
-                "c4.large",
-                "c4.xlarge",
-                "c4.2xlarge",
-                "c4.4xlarge",
-                "c4.8xlarge",
-                "g2.2xlarge",
-                "r3.large",
-                "r3.xlarge",
-                "r3.2xlarge",
-                "r3.4xlarge",
-                "r3.8xlarge",
-                "i2.xlarge",
-                "i2.2xlarge",
-                "i2.4xlarge",
-                "i2.8xlarge",
-                "d2.xlarge",
-                "d2.2xlarge",
-                "d2.4xlarge",
-                "d2.8xlarge",
-                "hi1.4xlarge",
-                "hs1.8xlarge",
-                "cr1.8xlarge",
-                "cc2.8xlarge",
-                "cg1.4xlarge"
-            ],
-            "ConstraintDescription": "must be a valid EC2 instance type."
-        },
-        "NexusInstanceType": {
-            "Description": "Nexus EC2 instance type",
-            "Type": "String",
-            "Default": "t2.small",
-            "AllowedValues": [
-                "t1.micro",
-                "t2.micro",
-                "t2.small",
-                "t2.medium",
-                "m1.small",
-                "m1.medium",
-                "m1.large",
-                "m1.xlarge",
-                "m2.xlarge",
-                "m2.2xlarge",
-                "m2.4xlarge",
-                "m3.medium",
-                "m3.large",
-                "m3.xlarge",
-                "m3.2xlarge",
-                "c1.medium",
-                "c1.xlarge",
-                "c3.large",
-                "c3.xlarge",
-                "c3.2xlarge",
-                "c3.4xlarge",
-                "c3.8xlarge",
-                "c4.large",
-                "c4.xlarge",
-                "c4.2xlarge",
-                "c4.4xlarge",
-                "c4.8xlarge",
-                "g2.2xlarge",
-                "r3.large",
-                "r3.xlarge",
-                "r3.2xlarge",
-                "r3.4xlarge",
-                "r3.8xlarge",
-                "i2.xlarge",
-                "i2.2xlarge",
-                "i2.4xlarge",
-                "i2.8xlarge",
-                "d2.xlarge",
-                "d2.2xlarge",
-                "d2.4xlarge",
-                "d2.8xlarge",
-                "hi1.4xlarge",
-                "hs1.8xlarge",
-                "cr1.8xlarge",
-                "cc2.8xlarge",
-                "cg1.4xlarge"
-            ],
-            "ConstraintDescription": "must be a valid EC2 instance type."
-        },
-        "LogserverInstanceType": {
-            "Description": "Logserver EC2 instance type",
-            "Type": "String",
-            "Default": "t2.small",
-            "AllowedValues": [
-                "t1.micro",
-                "t2.micro",
-                "t2.small",
-                "t2.medium",
-                "m1.small",
-                "m1.medium",
-                "m1.large",
-                "m1.xlarge",
-                "m2.xlarge",
-                "m2.2xlarge",
-                "m2.4xlarge",
-                "m3.medium",
-                "m3.large",
-                "m3.xlarge",
-                "m3.2xlarge",
-                "c1.medium",
-                "c1.xlarge",
-                "c3.large",
-                "c3.xlarge",
-                "c3.2xlarge",
-                "c3.4xlarge",
-                "c3.8xlarge",
-                "c4.large",
-                "c4.xlarge",
-                "c4.2xlarge",
-                "c4.4xlarge",
-                "c4.8xlarge",
-                "g2.2xlarge",
-                "r3.large",
-                "r3.xlarge",
-                "r3.2xlarge",
-                "r3.4xlarge",
-                "r3.8xlarge",
-                "i2.xlarge",
-                "i2.2xlarge",
-                "i2.4xlarge",
-                "i2.8xlarge",
-                "d2.xlarge",
-                "d2.2xlarge",
-                "d2.4xlarge",
-                "d2.8xlarge",
-                "hi1.4xlarge",
-                "hs1.8xlarge",
-                "cr1.8xlarge",
-                "cc2.8xlarge",
-                "cg1.4xlarge"
-            ],
-            "ConstraintDescription": "must be a valid EC2 instance type."
-        },
-        "JobserverInstanceType": {
-            "Description": "Jobserver EC2 instance type",
-            "Type": "String",
-            "Default": "t2.micro",
-            "AllowedValues": [
-                "t1.micro",
-                "t2.micro",
-                "t2.small",
-                "t2.medium",
-                "m1.small",
-                "m1.medium",
-                "m1.large",
-                "m1.xlarge",
-                "m2.xlarge",
-                "m2.2xlarge",
-                "m2.4xlarge",
-                "m3.medium",
-                "m3.large",
-                "m3.xlarge",
-                "m3.2xlarge",
-                "c1.medium",
-                "c1.xlarge",
-                "c3.large",
-                "c3.xlarge",
-                "c3.2xlarge",
-                "c3.4xlarge",
-                "c3.8xlarge",
-                "c4.large",
-                "c4.xlarge",
-                "c4.2xlarge",
-                "c4.4xlarge",
-                "c4.8xlarge",
-                "g2.2xlarge",
-                "r3.large",
-                "r3.xlarge",
-                "r3.2xlarge",
-                "r3.4xlarge",
-                "r3.8xlarge",
-                "i2.xlarge",
-                "i2.2xlarge",
-                "i2.4xlarge",
-                "i2.8xlarge",
-                "d2.xlarge",
-                "d2.2xlarge",
-                "d2.4xlarge",
-                "d2.8xlarge",
-                "hi1.4xlarge",
-                "hs1.8xlarge",
-                "cr1.8xlarge",
-                "cc2.8xlarge",
-                "cg1.4xlarge"
-            ],
-            "ConstraintDescription": "must be a valid EC2 instance type."
-        },
-        "StudioInstanceType": {
-            "Description": "Studio EC2 instance type",
-            "Type": "String",
-            "Default": "m3.large",
-            "AllowedValues": [
-                "t1.micro",
-                "t2.micro",
-                "t2.small",
-                "t2.medium",
-                "m1.small",
-                "m1.medium",
-                "m1.large",
-                "m1.xlarge",
-                "m2.xlarge",
-                "m2.2xlarge",
-                "m2.4xlarge",
-                "m3.medium",
-                "m3.large",
-                "m3.xlarge",
-                "m3.2xlarge",
-                "c1.medium",
-                "c1.xlarge",
-                "c3.large",
-                "c3.xlarge",
-                "c3.2xlarge",
-                "c3.4xlarge",
-                "c3.8xlarge",
-                "c4.large",
-                "c4.xlarge",
-                "c4.2xlarge",
-                "c4.4xlarge",
-                "c4.8xlarge",
-                "g2.2xlarge",
-                "r3.large",
-                "r3.xlarge",
-                "r3.2xlarge",
-                "r3.4xlarge",
-                "r3.8xlarge",
-                "i2.xlarge",
-                "i2.2xlarge",
-                "i2.4xlarge",
-                "i2.8xlarge",
-                "d2.xlarge",
-                "d2.2xlarge",
-                "d2.4xlarge",
-                "d2.8xlarge",
-                "hi1.4xlarge",
-                "hs1.8xlarge",
-                "cr1.8xlarge",
-                "cc2.8xlarge",
-                "cg1.4xlarge"
-            ],
-            "ConstraintDescription": "must be a valid EC2 instance type."
-        },
-        "BastionInstanceType": {
-            "Description": "Amazon EC2 instance type for the bastion instances",
-            "Type": "String",
-            "Default": "t2.micro",
-            "AllowedValues": [
-                "t2.nano",
-                "t2.micro",
-                "t2.small",
-                "t2.medium",
-                "t2.large",
-                "m3.large",
-                "m3.xlarge",
-                "m3.2xlarge",
-                "m4.large",
-                "m4.xlarge",
-                "m4.2xlarge",
-                "m4.4xlarge"
-            ]
-        },
-
-        "NexusAdminUserid": {
-            "Description": "Nexus administrator userid.",
-            "Type": "String",
-            "Default": "admin"
-        },
-        "NexusAdminPassword": {
-            "Description": "Nexus password.",
-            "Type": "String",
-            "NoEcho": "true"
-        },
-        "TacDbHost": {
-            "Description": "Specify an external mysql database hostname, or leave blank to create a new RDS instance.",
-            "Type": "String",
-            "Default": ""
-        },
-		 "AmcDbUser": {
-            "Description": "AMC database user.",
-            "Type": "String",
-            "Default": "amc"
-        },
-        "AmcDbPassword": {
-            "Description": "AMC database password.",
-            "Type": "String",
-            "NoEcho": "true"
-        },
-
-        "MasterDbUser": {
-            "Description": "The master or root user used to create TAC and AMC databases and the TAC user.  Only needed if creating the TAC or AMC databases.",
-            "Type": "String",
-            "Default": "tadmin"
-        },
-        "MasterDbPassword": {
-            "Description": "Master user database password.  Only needed if creating the TAC or AMC databases.",
-            "Type": "String",
-            "NoEcho": "true"
-        },
-        "TacDbUser": {
-            "Description": "TAC database user.",
-            "Type": "String",
-            "Default": "tac"
-        },
-        "TacDbPassword": {
-            "Description": "TAC database password.",
-            "Type": "String",
-            "NoEcho": "true"
-        },
-        "DbClass": {
-            "Description": "Instance class of RDS instance",
-            "Type": "String",
-            "AllowedValues": [ "db.t2.micro", "db.t2.small", "db.t2.medium", "db.t2.large", "db.m4.large", "db.m4.xlarge", "db.m4.2xlarge", "db.m4.4xlarge", "db.m4.10xlarge", "db.r3.large", "db.r3.xlarge", "db.r3.2xlarge", "db.r3.4xlarge", "db.r3.8xlarge" ],
-            "Default": "db.t2.micro"
-        },
-        "DbAllocatedStorage": {
-            "Description": "Allocated Storage (in GB) for RDS instance",
-            "Type": "Number",
-            "Default": "20"
-        },
-        "RedshiftHost": {
-            "Description": "Specify an external Redshift database hostname, or leave blank to create a new RDS instance.  External Redshift databases must be configured separately to ensure access.",
-            "Type": "String",
-            "Default": ""
-        },
-		"RedshiftUsername": {
-            "Description": "RedShift Username",
-            "Type": "String",
-            "Default": "tadmin"
-        },
-		
-        "RedshiftPassword": {
-            "Description": "RedShift Password:  Can only contain alphanumeric characters or the following special characters !^*-_+, between 8 and 28 characters.  Must contain at least one lowercase letter, one uppercase letter and one number.",
-            "NoEcho": true,
-            "Type": "String",
-			"MinLength": 8,
-            "MaxLength": 28,
-            "AllowedPattern": "[a-zA-Z0-9!^*\\-_+]*"
-        },
-		"RedshiftDbName": {
-            "Description": "RedShift Database name",
-            "Type": "String",
-            "Default": ""
-        },
-
-
-        "GitHost": {
-            "Description": "Git host.",
-            "Type": "String",
-            "Default": ""
-        },
-
-        "GitRepo": {
-            "Description": "Git repository.",
-            "Type": "String",
-            "Default": "oodlejobs"
-        },
-        "GitAdminUserid": {
-            "Description": "Git user.",
-            "Type": "String",
-            "Default": "tadmin"
-        },
-        "GitAdminPassword": {
-            "Description": "Git password.",
-            "Type": "String",
-            "NoEcho": "true"
-        },
-        "GitAdminEmail": {
-            "Description": "Git admin contact email.",
-            "Type": "String",
-            "Default": ""
-        },
-        "GitTacUserid": {
-            "Description": "Git TAC userid.",
-            "Type": "String",
-            "Default": "tac"
-        },
-        "GitTacPassword": {
-            "Description": "Git TAC password.",
-            "Type": "String",
-            "NoEcho": "true"
-        },
-		"TacPassword": {
-            "Description": "TAC application password for tadmin account.",
-            "Type": "String",
-            "NoEcho": "true"
-        },
-        "GitTacEmail": {
-            "Description": "TAC contact email.",
-            "Type": "String",
-            "Default": ""
-        },
-        
-
-        "AvailabilityZones": {
-            "Description": "List of Availability Zones to use for the subnets in the VPC. Note: The logical order is preserved and only 2 AZs are used for this deployment.",
-            "Type": "List<AWS::EC2::AvailabilityZone::Name>"
-        },
-        "KeyPairName": {
-            "Description": "Public/private key pairs allow you to securely connect to your instance after it launches",
-            "Type": "AWS::EC2::KeyPair::KeyName"
-        },
-
-        "RemoteAccessCIDR": {
-            "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/([0-9]|[1-2][0-9]|3[0-2]))$",
-            "ConstraintDescription": "CIDR block parameter must be in the form x.x.x.x/x",
-            "Description": "Allowed CIDR block for external SSH access to the bastions",
-            "Type": "String"
-        }
-    },
-	"Resources": {
-    
-        "OodleMaster": {
-                "Type": "AWS::CloudFormation::Stack",
-                "Properties": {
-                    "TemplateURL": {
-                            "Fn::Sub": "https://s3.amazonaws.com/${QSS3BucketName}/${QSS3KeyPrefix}templates/oodle-master.template"
-                    },
-                    "TimeoutInMinutes": "60",
-                    "Parameters": {
-                        "QSS3URL":  "https://s3.amazonaws.com",
-                        "QSS3BucketName": {"Ref": "QSS3BucketName"},
-                        "QSS3KeyPrefix": {"Ref": "QSS3KeyPrefix"},
-                        "TalendResourceBucket": "repo-quickstart-talend",
-                        "TalendLicenseBucket": {"Ref" : "TalendLicenseBucket"},
-                        "CreateAmcDatabase": "true",
-                        "CreateDistantRunStack": "true",
-                        "CreateEmr": "true",
-                        "CreateJobserverAutoscaleStack": "true",
-                        "CreateTacDatabase": "true",
-						"AvailabilityZones": {
-												"Fn::Join": [ ",", { "Ref": "AvailabilityZones" } ]
-											},
-                        "VPCCIDR": "10.0.0.0/16",
-                        "PublicSubnet1CIDR": "10.0.128.0/20",
-                        "PublicSubnet2CIDR": "10.0.144.0/20",
-                        "PrivateSubnet1CIDR": "10.0.0.0/19",
-                        "PrivateSubnet2CIDR": "10.0.32.0/19",
-                        "RemoteAccessCIDR": {"Ref" : "RemoteAccessCIDR"},
-                        "KeyPairName": {"Ref": "KeyPairName"},
-                        "TacInstanceType": {"Ref" : "TacInstanceType"},
-                        "LogserverInstanceType": {"Ref" : "LogserverInstanceType"},
-                        "JobserverInstanceType": {"Ref" : "JobserverInstanceType"},
-                        "StudioInstanceType": {"Ref" : "StudioInstanceType"},
-                        "NexusInstanceType": {"Ref" : "NexusInstanceType"},
-						"BastionInstanceType" : {"Ref" : "BastionInstanceType"},
-                        "JobserverAutoscaleDesiredCapacity": "2",
-                        "JobserverAutoscaleMaxSize": "5",
-                        "DistantRunAutoscaleDesiredCapacity": "2",
-                        "DistantRunAutoscaleMaxSize": "5",
-                        "RedshiftHost": {"Ref" : "RedshiftHost"},
-                        "RedshiftUsername": { "Ref": "RedshiftUsername" },
-                        "RedshiftPassword": { "Ref": "RedshiftPassword"},
-                        "RedshiftDbName": { "Ref": "RedshiftDbName" },
-                        "TacDbHost" : {"Ref": "TacDbHost"},
-                        "MasterDbUser": {"Ref" : "MasterDbUser"},
-                        "MasterDbPassword": {"Ref": "MasterDbPassword"},
-                        "TacDbSchema": "tac_quickstart",
-                        "TacDbUser": {"Ref" : "TacDbUser"},
-                        "TacDbPassword": {"Ref" : "TacDbPassword"},
-						"TacPassword" : {"Ref" : "TacPassword"},
-                        "DbClass": {"Ref" : "DbClass"},
-                        "DbAllocatedStorage": {"Ref" : "DbAllocatedStorage"},
-						"AmcDbUser": { "Ref": "AmcDbUser" },
-						"AmcDbPassword": { "Ref": "AmcDbPassword" },
-                        "NexusAdminUserid": {"Ref" : "NexusAdminUserid"},
-                        "NexusAdminPassword": {"Ref" : "NexusAdminPassword"},
-                        "GitProtocol": "http",
-                        "GitHost": {"Ref" : "GitHost"},
-                        "GitPort": "80",
-                        "GitRepo": {"Ref" : "GitRepo"},
-                        "GitAdminUserid": {"Ref" : "GitAdminUserid"},
-                        "GitAdminPassword": {"Ref" : "GitAdminPassword"},
-                        "GitAdminEmail": {"Ref" : "GitAdminEmail"},
-                        "GitTacUserid": {"Ref" : "GitTacUserid"},
-                        "GitTacPassword": {"Ref": "GitTacPassword"},
-                        "GitTacEmail": {"Ref" : "GitTacEmail"},
-                        "NumBastionHosts": "0"
-                    }
-                }
-            }
-        }
-	}
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >-
+  This template uses the Talend Server templates with the AWS VPC quickstart.  The
+  AWS VPC creates a multi-AZ, multi-subnet VPC infrastructure with managed NAT gateways
+  in the public subnet for each Availability Zone. The Talend servers are deployed
+  to the public subnet with the exception of the Jobservers which are deployed to
+  the private subnet. **WARNING** This template creates AWS resources. You will be
+  billed for the AWS resources used if you create a stack from this template. (qs-1nrlpbhnp)
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Quick Start
+        Parameters:
+          - QSS3BucketName
+          - QSS3KeyPrefix
+          - TalendLicenseBucket
+      - Label:
+          default: Availability Zone configuration
+        Parameters:
+          - AvailabilityZones
+      - Label:
+          default: Network configuration
+        Parameters:
+          - RemoteAccessCIDR
+      - Label:
+          default: Amazon EC2 configuration
+        Parameters:
+          - KeyPairName
+          - TacInstanceType
+          - LogserverInstanceType
+          - JobserverInstanceType
+          - NexusInstanceType
+          - BastionInstanceType
+          - StudioInstanceType
+      - Label:
+          default: Redshift configuration
+        Parameters:
+          - RedshiftHost
+          - RedshiftUsername
+          - RedshiftPassword
+          - RedshiftDbName
+      - Label:
+          default: Talend Administration Center configuration
+        Parameters:
+          - TacDbHost
+          - MasterDbUser
+          - MasterDbPassword
+          - TacDbUser
+          - TacDbPassword
+          - TacPassword
+          - DbClass
+          - DbAllocatedStorage
+          - AmcDbUser
+          - AmcDbPassword
+      - Label:
+          default: Talend Nexus configuration
+        Parameters:
+          - NexusAdminUserid
+          - NexusAdminPassword
+      - Label:
+          default: Talend Git configuration
+        Parameters:
+          - GitHost
+          - GitRepo
+          - GitAdminUserid
+          - GitAdminPassword
+          - GitAdminEmail
+          - GitTacUserid
+          - GitTacPassword
+          - GitTacEmail
+    ParameterLabels:
+      QSS3BucketName:
+        default: Quick Start S3 Bucket
+      QSS3KeyPrefix:
+        default: Quick Start S3 Key Prefix
+      TalendLicenseBucket:
+        default: Talend License Bucket
+      AvailabilityZones:
+        default: Availability Zones
+      RemoteAccessCIDR:
+        default: Remote Access CIDR
+      KeyPairName:
+        default: Key Pair Name
+      TacInstanceType:
+        default: TAC Instance Type
+      TacDbUser:
+        default: TAC Database Username
+      TacDbPassword:
+        default: TAC Database Password
+      TacDbHost:
+        default: TAC Database Host
+      MasterDbUser:
+        default: TAC Master Database User
+      MasterDbPassword:
+        default: TAC Master Database Password
+      DbClass:
+        default: Database Instance Class
+      DbAllocatedStorage:
+        default: Database Allocated Storage
+      NexusAdminUserid:
+        default: Nexus Admin Userid
+      NexusAdminPassword:
+        default: Nexus Admin Password
+      LogserverInstanceType:
+        default: Logserver Instance Type
+      JobserverInstanceType:
+        default: Jobserver Instance Type
+      NexusInstanceType:
+        default: Nexus Instance Type
+      RedshiftHost:
+        default: Redshift Host
+      RedshiftDbName:
+        default: Redshift Database Name
+      RedshiftUsername:
+        default: Redshift Username
+      RedshiftPassword:
+        default: Redshift Password
+      GitHost:
+        default: Git Host
+      GitRepo:
+        default: Git Repository
+      GitAdminUserid:
+        default: Git Admin Userid
+      GitAdminPassword:
+        default: Git Admin Password
+      GitAdminEmail:
+        default: Git Admin Email
+      GitTacUserid:
+        default: Git TAC Userid
+      GitTacPassword:
+        default: Git TAC Password
+      GitTacEmail:
+        default: Git TAC Email
+Parameters:
+  QSS3BucketName:
+    AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-.]*[0-9a-zA-Z])*$
+    ConstraintDescription: Quick Start bucket name can include numbers, lowercase
+      letters, uppercase letters, periods (.), and hyphens (-). It cannot start or
+      end with a hyphen (-) or period (.).
+    Default: oodle.quickstart.talend
+    Description: >-
+      S3 bucket name for the Quick Start assets. Quick Start bucket name can include
+      numbers, lowercase letters, uppercase letters, periods (.), and hyphens (-).
+      It cannot start or end with a hyphen (-) or period (.).
+    Type: String
+  QSS3KeyPrefix:
+    AllowedPattern: ^[0-9a-zA-Z-/]*$
+    ConstraintDescription: >-
+      Quick Start key prefix can include numbers, lowercase letters, uppercase letters,
+      hyphens (-), and forward slash (/).  Prefix cannot start with a slash but must
+      end with a slash unless it is the empty string.
+    Default: ''
+    Description: >-
+      S3 key prefix for the Quick Start assets. Quick Start key prefix can include
+      numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash
+      (/).  Prefix cannot start with a slash but must end with a slash unless it is
+      the empty string.
+    Type: String
+  TalendLicenseBucket:
+    Description: Bucket for license file received in email.
+    Type: String
+    AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-.]*[0-9a-zA-Z])*$
+  TacInstanceType:
+    Description: TAC EC2 instance type
+    Type: String
+    Default: t2.medium
+    AllowedValues:
+      - t1.micro
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - m1.small
+      - m1.medium
+      - m1.large
+      - m1.xlarge
+      - m2.xlarge
+      - m2.2xlarge
+      - m2.4xlarge
+      - m3.medium
+      - m3.large
+      - m3.xlarge
+      - m3.2xlarge
+      - c1.medium
+      - c1.xlarge
+      - c3.large
+      - c3.xlarge
+      - c3.2xlarge
+      - c3.4xlarge
+      - c3.8xlarge
+      - c4.large
+      - c4.xlarge
+      - c4.2xlarge
+      - c4.4xlarge
+      - c4.8xlarge
+      - g2.2xlarge
+      - r3.large
+      - r3.xlarge
+      - r3.2xlarge
+      - r3.4xlarge
+      - r3.8xlarge
+      - i2.xlarge
+      - i2.2xlarge
+      - i2.4xlarge
+      - i2.8xlarge
+      - d2.xlarge
+      - d2.2xlarge
+      - d2.4xlarge
+      - d2.8xlarge
+      - hi1.4xlarge
+      - hs1.8xlarge
+      - cr1.8xlarge
+      - cc2.8xlarge
+      - cg1.4xlarge
+    ConstraintDescription: must be a valid EC2 instance type.
+  NexusInstanceType:
+    Description: Nexus EC2 instance type
+    Type: String
+    Default: t2.small
+    AllowedValues:
+      - t1.micro
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - m1.small
+      - m1.medium
+      - m1.large
+      - m1.xlarge
+      - m2.xlarge
+      - m2.2xlarge
+      - m2.4xlarge
+      - m3.medium
+      - m3.large
+      - m3.xlarge
+      - m3.2xlarge
+      - c1.medium
+      - c1.xlarge
+      - c3.large
+      - c3.xlarge
+      - c3.2xlarge
+      - c3.4xlarge
+      - c3.8xlarge
+      - c4.large
+      - c4.xlarge
+      - c4.2xlarge
+      - c4.4xlarge
+      - c4.8xlarge
+      - g2.2xlarge
+      - r3.large
+      - r3.xlarge
+      - r3.2xlarge
+      - r3.4xlarge
+      - r3.8xlarge
+      - i2.xlarge
+      - i2.2xlarge
+      - i2.4xlarge
+      - i2.8xlarge
+      - d2.xlarge
+      - d2.2xlarge
+      - d2.4xlarge
+      - d2.8xlarge
+      - hi1.4xlarge
+      - hs1.8xlarge
+      - cr1.8xlarge
+      - cc2.8xlarge
+      - cg1.4xlarge
+    ConstraintDescription: must be a valid EC2 instance type.
+  LogserverInstanceType:
+    Description: Logserver EC2 instance type
+    Type: String
+    Default: t2.small
+    AllowedValues:
+      - t1.micro
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - m1.small
+      - m1.medium
+      - m1.large
+      - m1.xlarge
+      - m2.xlarge
+      - m2.2xlarge
+      - m2.4xlarge
+      - m3.medium
+      - m3.large
+      - m3.xlarge
+      - m3.2xlarge
+      - c1.medium
+      - c1.xlarge
+      - c3.large
+      - c3.xlarge
+      - c3.2xlarge
+      - c3.4xlarge
+      - c3.8xlarge
+      - c4.large
+      - c4.xlarge
+      - c4.2xlarge
+      - c4.4xlarge
+      - c4.8xlarge
+      - g2.2xlarge
+      - r3.large
+      - r3.xlarge
+      - r3.2xlarge
+      - r3.4xlarge
+      - r3.8xlarge
+      - i2.xlarge
+      - i2.2xlarge
+      - i2.4xlarge
+      - i2.8xlarge
+      - d2.xlarge
+      - d2.2xlarge
+      - d2.4xlarge
+      - d2.8xlarge
+      - hi1.4xlarge
+      - hs1.8xlarge
+      - cr1.8xlarge
+      - cc2.8xlarge
+      - cg1.4xlarge
+    ConstraintDescription: must be a valid EC2 instance type.
+  JobserverInstanceType:
+    Description: Jobserver EC2 instance type
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t1.micro
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - m1.small
+      - m1.medium
+      - m1.large
+      - m1.xlarge
+      - m2.xlarge
+      - m2.2xlarge
+      - m2.4xlarge
+      - m3.medium
+      - m3.large
+      - m3.xlarge
+      - m3.2xlarge
+      - c1.medium
+      - c1.xlarge
+      - c3.large
+      - c3.xlarge
+      - c3.2xlarge
+      - c3.4xlarge
+      - c3.8xlarge
+      - c4.large
+      - c4.xlarge
+      - c4.2xlarge
+      - c4.4xlarge
+      - c4.8xlarge
+      - g2.2xlarge
+      - r3.large
+      - r3.xlarge
+      - r3.2xlarge
+      - r3.4xlarge
+      - r3.8xlarge
+      - i2.xlarge
+      - i2.2xlarge
+      - i2.4xlarge
+      - i2.8xlarge
+      - d2.xlarge
+      - d2.2xlarge
+      - d2.4xlarge
+      - d2.8xlarge
+      - hi1.4xlarge
+      - hs1.8xlarge
+      - cr1.8xlarge
+      - cc2.8xlarge
+      - cg1.4xlarge
+    ConstraintDescription: must be a valid EC2 instance type.
+  StudioInstanceType:
+    Description: Studio EC2 instance type
+    Type: String
+    Default: m3.large
+    AllowedValues:
+      - t1.micro
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - m1.small
+      - m1.medium
+      - m1.large
+      - m1.xlarge
+      - m2.xlarge
+      - m2.2xlarge
+      - m2.4xlarge
+      - m3.medium
+      - m3.large
+      - m3.xlarge
+      - m3.2xlarge
+      - c1.medium
+      - c1.xlarge
+      - c3.large
+      - c3.xlarge
+      - c3.2xlarge
+      - c3.4xlarge
+      - c3.8xlarge
+      - c4.large
+      - c4.xlarge
+      - c4.2xlarge
+      - c4.4xlarge
+      - c4.8xlarge
+      - g2.2xlarge
+      - r3.large
+      - r3.xlarge
+      - r3.2xlarge
+      - r3.4xlarge
+      - r3.8xlarge
+      - i2.xlarge
+      - i2.2xlarge
+      - i2.4xlarge
+      - i2.8xlarge
+      - d2.xlarge
+      - d2.2xlarge
+      - d2.4xlarge
+      - d2.8xlarge
+      - hi1.4xlarge
+      - hs1.8xlarge
+      - cr1.8xlarge
+      - cc2.8xlarge
+      - cg1.4xlarge
+    ConstraintDescription: must be a valid EC2 instance type.
+  BastionInstanceType:
+    Description: Amazon EC2 instance type for the bastion instances
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.nano
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - t2.large
+      - m3.large
+      - m3.xlarge
+      - m3.2xlarge
+      - m4.large
+      - m4.xlarge
+      - m4.2xlarge
+      - m4.4xlarge
+  NexusAdminUserid:
+    Description: Nexus administrator userid.
+    Type: String
+    Default: admin
+  NexusAdminPassword:
+    Description: Nexus password.
+    Type: String
+    NoEcho: 'true'
+  TacDbHost:
+    Description: Specify an external mysql database hostname, or leave blank to create
+      a new RDS instance.
+    Type: String
+    Default: ''
+  AmcDbUser:
+    Description: AMC database user.
+    Type: String
+    Default: amc
+  AmcDbPassword:
+    Description: AMC database password.
+    Type: String
+    NoEcho: 'true'
+  MasterDbUser:
+    Description: The master or root user used to create TAC and AMC databases and
+      the TAC user.  Only needed if creating the TAC or AMC databases.
+    Type: String
+    Default: tadmin
+  MasterDbPassword:
+    Description: Master user database password.  Only needed if creating the TAC or
+      AMC databases.
+    Type: String
+    NoEcho: 'true'
+  TacDbUser:
+    Description: TAC database user.
+    Type: String
+    Default: tac
+  TacDbPassword:
+    Description: TAC database password.
+    Type: String
+    NoEcho: 'true'
+  DbClass:
+    Description: Instance class of RDS instance
+    Type: String
+    AllowedValues:
+      - db.t2.micro
+      - db.t2.small
+      - db.t2.medium
+      - db.t2.large
+      - db.m4.large
+      - db.m4.xlarge
+      - db.m4.2xlarge
+      - db.m4.4xlarge
+      - db.m4.10xlarge
+      - db.r3.large
+      - db.r3.xlarge
+      - db.r3.2xlarge
+      - db.r3.4xlarge
+      - db.r3.8xlarge
+    Default: db.t2.micro
+  DbAllocatedStorage:
+    Description: Allocated Storage (in GB) for RDS instance
+    Type: Number
+    Default: '20'
+  RedshiftHost:
+    Description: Specify an external Redshift database hostname, or leave blank to
+      create a new RDS instance.  External Redshift databases must be configured separately
+      to ensure access.
+    Type: String
+    Default: ''
+  RedshiftUsername:
+    Description: RedShift Username
+    Type: String
+    Default: tadmin
+  RedshiftPassword:
+    Description: >-
+      RedShift Password:  Can only contain alphanumeric characters or the following
+      special characters !^*-_+, between 8 and 28 characters.  Must contain at least
+      one lowercase letter, one uppercase letter and one number.
+    NoEcho: true
+    Type: String
+    MinLength: 8
+    MaxLength: 28
+    AllowedPattern: '[a-zA-Z0-9!^*\-_+]*'
+  RedshiftDbName:
+    Description: RedShift Database name
+    Type: String
+    Default: ''
+  GitHost:
+    Description: Git host.
+    Type: String
+    Default: ''
+  GitRepo:
+    Description: Git repository.
+    Type: String
+    Default: oodlejobs
+  GitAdminUserid:
+    Description: Git user.
+    Type: String
+    Default: tadmin
+  GitAdminPassword:
+    Description: Git password.
+    Type: String
+    NoEcho: 'true'
+  GitAdminEmail:
+    Description: Git admin contact email.
+    Type: String
+    Default: ''
+  GitTacUserid:
+    Description: Git TAC userid.
+    Type: String
+    Default: tac
+  GitTacPassword:
+    Description: Git TAC password.
+    Type: String
+    NoEcho: 'true'
+  TacPassword:
+    Description: TAC application password for tadmin account.
+    Type: String
+    NoEcho: 'true'
+  GitTacEmail:
+    Description: TAC contact email.
+    Type: String
+    Default: ''
+  AvailabilityZones:
+    Description: 'List of Availability Zones to use for the subnets in the VPC. Note:
+      The logical order is preserved and only 2 AZs are used for this deployment.'
+    Type: List<AWS::EC2::AvailabilityZone::Name>
+  KeyPairName:
+    Description: Public/private key pairs allow you to securely connect to your instance
+      after it launches
+    Type: AWS::EC2::KeyPair::KeyName
+  RemoteAccessCIDR:
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/x
+    Description: Allowed CIDR block for external SSH access to the bastions
+    Type: String
+Resources:
+  OodleMaster:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub 'https://s3.amazonaws.com/${QSS3BucketName}/${QSS3KeyPrefix}templates/oodle-master.template'
+      TimeoutInMinutes: '60'
+      Parameters:
+        QSS3URL: https://s3.amazonaws.com
+        QSS3BucketName: !Ref 'QSS3BucketName'
+        QSS3KeyPrefix: !Ref 'QSS3KeyPrefix'
+        TalendResourceBucket: repo-quickstart-talend
+        TalendLicenseBucket: !Ref 'TalendLicenseBucket'
+        CreateAmcDatabase: 'true'
+        CreateDistantRunStack: 'true'
+        CreateEmr: 'true'
+        CreateJobserverAutoscaleStack: 'true'
+        CreateTacDatabase: 'true'
+        AvailabilityZones: !Join
+          - ','
+          - !Ref 'AvailabilityZones'
+        VPCCIDR: 10.0.0.0/16
+        PublicSubnet1CIDR: 10.0.128.0/20
+        PublicSubnet2CIDR: 10.0.144.0/20
+        PrivateSubnet1CIDR: 10.0.0.0/19
+        PrivateSubnet2CIDR: 10.0.32.0/19
+        RemoteAccessCIDR: !Ref 'RemoteAccessCIDR'
+        KeyPairName: !Ref 'KeyPairName'
+        TacInstanceType: !Ref 'TacInstanceType'
+        LogserverInstanceType: !Ref 'LogserverInstanceType'
+        JobserverInstanceType: !Ref 'JobserverInstanceType'
+        StudioInstanceType: !Ref 'StudioInstanceType'
+        NexusInstanceType: !Ref 'NexusInstanceType'
+        BastionInstanceType: !Ref 'BastionInstanceType'
+        JobserverAutoscaleDesiredCapacity: '2'
+        JobserverAutoscaleMaxSize: '5'
+        DistantRunAutoscaleDesiredCapacity: '2'
+        DistantRunAutoscaleMaxSize: '5'
+        RedshiftHost: !Ref 'RedshiftHost'
+        RedshiftUsername: !Ref 'RedshiftUsername'
+        RedshiftPassword: !Ref 'RedshiftPassword'
+        RedshiftDbName: !Ref 'RedshiftDbName'
+        TacDbHost: !Ref 'TacDbHost'
+        MasterDbUser: !Ref 'MasterDbUser'
+        MasterDbPassword: !Ref 'MasterDbPassword'
+        TacDbSchema: tac_quickstart
+        TacDbUser: !Ref 'TacDbUser'
+        TacDbPassword: !Ref 'TacDbPassword'
+        TacPassword: !Ref 'TacPassword'
+        DbClass: !Ref 'DbClass'
+        DbAllocatedStorage: !Ref 'DbAllocatedStorage'
+        AmcDbUser: !Ref 'AmcDbUser'
+        AmcDbPassword: !Ref 'AmcDbPassword'
+        NexusAdminUserid: !Ref 'NexusAdminUserid'
+        NexusAdminPassword: !Ref 'NexusAdminPassword'
+        GitProtocol: http
+        GitHost: !Ref 'GitHost'
+        GitPort: '80'
+        GitRepo: !Ref 'GitRepo'
+        GitAdminUserid: !Ref 'GitAdminUserid'
+        GitAdminPassword: !Ref 'GitAdminPassword'
+        GitAdminEmail: !Ref 'GitAdminEmail'
+        GitTacUserid: !Ref 'GitTacUserid'
+        GitTacPassword: !Ref 'GitTacPassword'
+        GitTacEmail: !Ref 'GitTacEmail'
+        NumBastionHosts: '0'
